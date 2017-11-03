@@ -107,7 +107,7 @@ def send_data():
     data = {'dev_id':dev_id,'payload_raw':value}
     #response = requests.post(url='http://172.16.0.154:2021/pushData', json = data)
     #response = requests.post(url='https://prathap.localtunnel.me/pushData', json = data)
-    response = requests.post(url='https://13.71.118.240:2021/pushData', json = data)
+    response = requests.post(url='http://13.71.118.240:2021/pushData', json = data)
     #response = requests.post(url='ENTER URL', json = data)
     if response.status_code == requests.codes.ok:
         return jsonify(message='sent '+str(value)+' successfully'), 200
