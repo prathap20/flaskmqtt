@@ -91,5 +91,5 @@ def handle_logging(client,userdata, level, buf):
 
 if __name__ == '__main__':
     #port = int(os.environ.get('PORT', 5000))
-    socketio.run(app,host='127.0.0.1', port=2021, use_reloader=True, debug=True)
+    socketio.run(app,host='0.0.0.0', port=2021, use_reloader=True, debug=True)
     #socketio.run(app)
