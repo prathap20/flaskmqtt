@@ -84,7 +84,7 @@ def push_data():
     payload_raw = request.json.get('payload_raw')
     #if more hex value like string
     value = int(payload_raw.decode('base64').encode('hex')[-2:], 16)
-    pData = PushData(devId, value)
+    pData = PushData(dev_id, value)
     db.session.add(pData)
     db.session.commit()
     #if single hex value
