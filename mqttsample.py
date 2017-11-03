@@ -99,7 +99,7 @@ def push_data():
 def send_data():
     dev_id = request.json.get('dev_id')
     payload_raw = request.json.get('payload_raw')
-    sData = SensorData(dev_id, payload_raw)
+    sData = SendData(dev_id, payload_raw)
     db.session.add(sData)
     db.session.commit()
     value = '{0:02x}'.format(payload_raw).decode('hex').encode('base64')
