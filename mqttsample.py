@@ -9,6 +9,8 @@ from flask_mqtt import Mqtt
 from flask_socketio import SocketIO
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
+from flask_script import Manager, Server
+from flask_migrate import Migrate, MigrateCommand
 
 eventlet.monkey_patch()
 
@@ -25,34 +27,23 @@ app.config['MQTT_KEEPALIVE'] = 5
 app.config['MQTT_TLS_ENABLED'] = False
 db = SQLAlchemy(app)
 
+migrate = Migrate(app,db)
+manager = Manager(app)
+#server = Server(host='0.0.0.0', port=2021,use_debugger=True)
+#manager.add_command('runserver', manager.command)
+
 mqtt = Mqtt(app)
 socketio = SocketIO(app)
 bootstrap =Bootstrap(app)
 
+@manager.command
+def run():
+    socketio.run(app, host='0.0.0.0', port=2021, use_reloader=False, debug=True)
+manager.add_command('db', MigrateCommand)
+
 
 class SendData(db.Model):
     __tablename__ = 'send_data'
-    nodeId = db.Column(db.Integer, primary_key=True)
-    devId = db.Column(db.String(20))
-    data = db.Column(db.Integer)
-
-    def __init__(self, devId, data):
-        self.devId = devId
-        self.data = data
-
-    def __repr__(self):
-        return '<DeviceId %s>' % self.devId
-
-    def serialize(self):
-        return {
-            'nodeId': self.nodeId,
-            'devId': self.devId,
-            'data': self.data
-        }
-
-
-class PushData(db.Model):
-    __tablename__ = 'push_data'
     rowId = db.Column(db.Integer, primary_key=True)
     devId = db.Column(db.String(20))
     data = db.Column(db.Integer)
@@ -66,10 +57,41 @@ class PushData(db.Model):
 
     def serialize(self):
         return {
-            'rowId': self.rowId,
+            'rowId':self.rowId,
             'devId': self.devId,
             'data': self.data
         }
+
+
+class PushData(db.Model):
+    __tablename__ = 'push_data'
+    rowId = db.Column(db.Integer, primary_key=True)
+    devId = db.Column(db.String(20))
+    hwSerial = db.Column(db.String(20))
+    downUrl = db.Column(db.String(20))
+    data = db.Column(db.Integer)
+
+    def __init__(self, devId, hwSerial, downUrl, data):
+        self.devId = devId
+        self.hwSerial = hwSerial
+        self.downUrl = downUrl
+        self.data = data
+
+    def __repr__(self):
+        return '<DeviceId %s>' % self.devId
+
+    def serialize(self):
+        return {
+            'rowId': self.rowId,
+            'devId': self.devId,
+            'hwSerial': self.hwSerial,
+            'downUrl': self.downUrl,
+            'data': self.data
+        }
+
+
+db.create_all()
+db.session.commit()
 
 @app.route('/')
 def index():
@@ -84,7 +106,7 @@ def push_data():
     payload_raw = request.json.get('payload_raw')
     #if more hex value like string
     value = int(payload_raw.decode('base64').encode('hex')[-2:], 16)
-    pData = PushData(dev_id, value)
+    pData = PushData(dev_id, hardware_serial, downlink_url, value)
     db.session.add(pData)
     db.session.commit()
     #if single hex value
@@ -105,9 +127,9 @@ def send_data():
     value = '{0:02x}'.format(payload_raw).decode('hex').encode('base64')
     print 'VALUE BASE64 :%s' % value
     data = {'dev_id':dev_id,'payload_raw':value}
-    #response = requests.post(url='http://172.16.0.154:2021/pushData', json = data)
+    response = requests.post(url='http://172.16.0.191:2021/pushData', json = data)
     #response = requests.post(url='https://prathap.localtunnel.me/pushData', json = data)
-    response = requests.post(url='http://13.71.118.240:2021/pushData', json = data)
+    #response = requests.post(url='http://13.71.118.240:2021/pushData', json = data)
     #response = requests.post(url='ENTER URL', json = data)
     if response.status_code == requests.codes.ok:
         return jsonify(message='sent '+str(value)+' successfully'), 200
@@ -142,6 +164,6 @@ def handle_logging(client,userdata, level, buf):
 
 if __name__ == '__main__':
     db.create_all()
-    #port = int(os.environ.get('PORT', 5000))
-    socketio.run(app,host='0.0.0.0', port=2021, use_reloader=True, debug=True)
+    manager.run()
+    #socketio.run(app,host='0.0.0.0', port=2021, use_reloader=True, debug=True)
     #socketio.run(app)
