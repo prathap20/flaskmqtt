@@ -1,6 +1,6 @@
-# This flask mqtt application.
+# Flask Mqtt and RESTful Web Services Sample Application.
 
-Hi guys please follow the steps to run this application.
+Hi, please follow the steps to run this application.
 
 1. git clone https://github.com/prathap20/flaskmqtt.git
 (it clone my git repository)
