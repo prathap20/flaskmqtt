@@ -35,4 +35,4 @@ alembic == 0.9.5
 eventlet == 0.21.0
 
 # mqttsample.py: 4
-requests == 2.18.4
+requests == 2.20.0
