@@ -3,7 +3,7 @@
 
 # migrations\env.py: 20
 # mqttsample.py: 7
-Flask == 0.12.2
+Flask == 1.0
 
 # mqttsample.py: 10
 Flask_Bootstrap == 3.3.7.1
